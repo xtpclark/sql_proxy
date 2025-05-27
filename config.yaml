@@ -1,0 +1,27 @@
+proxy:
+  port: 3306
+  source_dialect: mysql
+  log_file: "/app/proxy_test.log"
+  log_level: "DEBUG"
+  log_table: "proxy_query_logs"
+  idle_timeout: 3600.0
+  command_timeout: 60.0
+  log_retries: 3
+  log_retry_delay: 1.0
+  force_ilike: true
+  fallback_on_translation_fail: true
+  strict_result_sets: false
+databases:
+  mysql:
+    port: 3306
+    server_version: "8.0.27"
+    charset: "utf8mb4"
+    collation_id: 45
+  postgresql:
+    dsn: "postgresql://wpuser@postgres:5432/wordpressdb"
+    pool_min: 2
+    pool_max: 10
+  oracle:
+    dsn: ""
+    pool_min: 2
+    pool_max: 10
