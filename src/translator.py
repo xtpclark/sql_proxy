@@ -4,8 +4,8 @@ import re
 import logging
 import sqlparse
 from typing import Tuple, List, Optional
-from ..config import CONFIG
-from ..connectors.base import DatabaseConnector
+from .config import CONFIG
+from .connectors.base import DatabaseConnector
 
 logger = logging.getLogger("SQLProxy.Translator")
 
@@ -298,7 +298,8 @@ class Translator:
                                     assignments = update_clause.group(1).split(',')
                                     column_names = []
                                     for assignment in assignments:
-                                        col_match = re.match(r'^\s*([`]?[^`=\s]+[`]?)\s*=\s*VALUES\s*\(\s*[`]?([^`)]+)[`]?)\s*\)', query=assignment.strip(), re.IGNORECASE)
+                                        col_match = re.match(r'^\s*([`]?[^`=\s]+[`]?)\s*=\s*VALUES\s*\(\s*[`]?([^`)]+)[`]?\s*\)', assignment.strip(), re.IGNORECASE)
+#                                        col_match = re.match(r'^\s*([`]?[^`=\s]+[`]?)\s*=\s*VALUES\s*\(\s*[`]?([^`)]+)[`]?)\s*\)', query=assignment.strip(), re.IGNORECASE)
                                         if col_match:
                                             col_name = col_match.group(1).strip('`')
                                             column_names.append(col_name)
@@ -311,7 +312,7 @@ class Translator:
                                             query,
                                             flags=re.IGNORECASE
                                         )
-                                        translated_query = sqlglot.transpile(translated_query, read="mysql', write="postgres")[0]
+                                        translated_query = sqlglot.transpile(translated_query, read="mysql", write="postgres")[0]
                                         translations.append(f"Fallback: Translated INSERT ... ON DUPLICATE KEY to PostgreSQL ON CONFLICT for table {table} with columns {column_names}")
                                         return translated_query, translations
                                     else:
@@ -328,7 +329,7 @@ class Translator:
                             translated_query = sqlglot.transpile(translated_query, read="mysql", write="postgres")[0]
                             translations.append("Fallback: Removed SQL_CALC_FOUND_ROWS using sqlparse")
                             if CONFIG["proxy"]["force_i"]:
-                                original_query = translated_query)
+                                original_query = translated_query
                                 translated_query = re.sub(r'\bLIKE\b', 'ILIKE', translated_query, flags=re.IGNORECASE)
                                 if translated_query != original_query:
                                     translations.append("Replaced LIKE with ILIKE for case-insensitive matching")
@@ -343,3 +344,4 @@ class Translator:
                 raise sqlglot_errors.SqlglotError(f"sqlglot transpilation error: {e}")
 
         return translated_query, translations
+
